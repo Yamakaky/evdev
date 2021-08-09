@@ -1,4 +1,4 @@
-use libc::c_int;
+use libc::{c_int, uinput_abs_setup};
 use libc::{ff_effect, input_absinfo, input_id, input_keymap_entry, uinput_setup};
 // use libc::{
 //     ff_condition_effect, ff_constant_effect, ff_envelope, ff_periodic_effect, ff_ramp_effect,
@@ -45,6 +45,7 @@ ioctl_write_int!(ui_set_evbit, UINPUT_IOCTL_BASE, 100);
 ioctl_write_int!(ui_set_keybit, UINPUT_IOCTL_BASE, 101);
 ioctl_write_int!(ui_set_relbit, UINPUT_IOCTL_BASE, 102);
 ioctl_write_int!(ui_set_absbit, UINPUT_IOCTL_BASE, 103);
+ioctl_write_ptr!(ui_abs_setup, UINPUT_IOCTL_BASE, 4, uinput_abs_setup);
 ioctl_write_int!(ui_set_mscbit, UINPUT_IOCTL_BASE, 104);
 ioctl_write_int!(ui_set_ledbit, UINPUT_IOCTL_BASE, 105);
 ioctl_write_int!(ui_set_sndbit, UINPUT_IOCTL_BASE, 106);

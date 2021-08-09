@@ -2,10 +2,10 @@
 //!
 //! This is quite useful when testing/debugging devices, or synchronization.
 
-use crate::constants::EventType;
 use crate::inputid::{BusType, InputId};
+use crate::{constants::EventType, AbsoluteAxisType};
 use crate::{nix_err, sys, AttributeSetRef, InputEvent, Key, RelativeAxisType, SwitchType};
-use libc::O_NONBLOCK;
+use libc::{input_absinfo, uinput_abs_setup, O_NONBLOCK};
 use std::fs::{File, OpenOptions};
 use std::io::{self, Write};
 use std::os::unix::{fs::OpenOptionsExt, io::AsRawFd};
@@ -87,6 +87,45 @@ impl<'a> VirtualDeviceBuilder<'a> {
                     bit.0 as nix::sys::ioctl::ioctl_param_type,
                 )
             }
+            .map_err(nix_err)?;
+        }
+
+        Ok(self)
+    }
+
+    pub fn with_absolute_axes(
+        self,
+        axis: AbsoluteAxisType,
+        minimum: i32,
+        maximum: i32,
+    ) -> io::Result<Self> {
+        unsafe {
+            sys::ui_set_evbit(
+                self.file.as_raw_fd(),
+                crate::EventType::ABSOLUTE.0 as nix::sys::ioctl::ioctl_param_type,
+            )
+            .map_err(nix_err)?;
+
+            sys::ui_set_absbit(
+                self.file.as_raw_fd(),
+                axis.0 as nix::sys::ioctl::ioctl_param_type,
+            )
+            .map_err(nix_err)?;
+
+            sys::ui_abs_setup(
+                self.file.as_raw_fd(),
+                &uinput_abs_setup {
+                    code: axis.0,
+                    absinfo: input_absinfo {
+                        minimum,
+                        maximum,
+                        value: 0,
+                        fuzz: 0,
+                        flat: 0,
+                        resolution: 0,
+                    },
+                },
+            )
             .map_err(nix_err)?;
         }
 
